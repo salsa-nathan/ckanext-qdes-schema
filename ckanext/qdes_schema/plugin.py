@@ -1,15 +1,23 @@
+import ast
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import json
+import logging
 
+from ckan.lib.navl.dictization_functions import MissingNullEncoder
 from ckanext.qdes_schema import helpers, validators
 from ckanext.qdes_schema.logic.action import get
+
+log = logging.getLogger(__name__)
+
 
 class QDESSchemaPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IActions)
+    plugins.implements(plugins.IFacets)
+    plugins.implements(plugins.IPackageController, inherit=True)
 
     # IValidators
     def get_validators(self):
@@ -51,6 +59,7 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
             'set_first_option': helpers.set_first_option,
             'get_current_datetime': helpers.get_current_datetime,
             'qdes_dataservice_choices': helpers.qdes_dataservice_choices,
+            'qdes_process_json_facets': helpers.qdes_process_json_facets,
         }
 
     def get_multi_textarea_values(self, value):
@@ -67,3 +76,58 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
         return {
             'get_dataservice': get.dataservice
         }
+
+    # IFacets
+    def dataset_facets(self, facets_dict, package_type):
+        facets_dict['type'] = plugins.toolkit._('Resource type')
+        facets_dict['classification'] = plugins.toolkit._('General classification of dataset type')
+        facets_dict['topic'] = plugins.toolkit._('Topic or theme')
+        return facets_dict
+
+    # IPackageController
+    def before_index(self, pkg_dict):
+        from pprint import pprint
+        log.debug('>>>> QDES before_index <<<<')
+        validated_data_dict = None
+
+        #log.debug(pprint(validated_data_dict))
+        #log.debug(type(validated_data_dict))
+        #log.debug(pprint(ast.literal_eval(validated_data_dict)))
+
+        try:
+            # 'validated_data_dict' is actually a string representation of a dict
+            # we need to convert it back to a dict in order to process it
+            # and then convert it back to a string when we're finished
+            validated_data_dict = json.loads(pkg_dict['validated_data_dict'])
+            log.debug(pprint(validated_data_dict))
+        except Exception as e:
+            log.error(str(e))
+
+        # PoC remove some things
+        qdes_facets = ['classification', 'topic']
+
+        for facet in qdes_facets:
+            if pkg_dict.get('extras_' + facet, None):
+                pkg_dict.pop('extras_' + facet)
+
+            field_value = pkg_dict.get(facet, None)
+
+            if field_value:
+                try:
+                    items = json.loads(field_value)
+                    if items:
+                        pkg_dict[facet] = [item.split('/')[-1] for item in items]
+
+                        # We don't want to do this because when you load the dataset
+                        # for editing it comes from solr and the URIs have been lost
+                        # to re-populate the fields :(
+                        # if facet in validated_data_dict:
+                        #     validated_data_dict[facet] = pkg_dict[facet]
+                        #     print('ok')
+                except Exception as e:
+                    log.error(str(e))
+
+        # pkg_dict['validated_data_dict'] = json.dumps(validated_data_dict,
+        #                                              cls=MissingNullEncoder)
+
+        return pkg_dict

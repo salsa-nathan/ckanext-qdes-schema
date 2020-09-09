@@ -7,6 +7,7 @@ from ckan.plugins.toolkit import get_action
 
 log = logging.getLogger(__name__)
 
+
 def is_legacy_ckan():
     return False if h.ckan_version() > '2.9' else True
 
@@ -43,3 +44,18 @@ def qdes_dataservice_choices(field):
         log.error(str(e))
 
     return choices
+
+
+def qdes_process_json_facets(facet_items):
+    log.debug(facet_items)
+    processed_facet_items = []
+    import json
+    for item in facet_items:
+        try:
+            display_name = json.loads(item['display_name'])
+            item['display_name'] = display_name[0].split('/')[-1]
+            #processed_facet_items.append({
+            # })
+        except Exception as e:
+            log.error(str(e))
+    return facet_items
