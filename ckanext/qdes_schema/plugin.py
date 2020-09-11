@@ -94,12 +94,18 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
         #log.debug(type(validated_data_dict))
         #log.debug(pprint(ast.literal_eval(validated_data_dict)))
 
+        # PoC - remove relationship fields
+        if 'relationships_as_subject' in pkg_dict:
+            pkg_dict.pop('relationships_as_subject')
+        if 'relationships_as_object' in pkg_dict:
+            pkg_dict.pop('relationships_as_object')
+
         try:
             # 'validated_data_dict' is actually a string representation of a dict
             # we need to convert it back to a dict in order to process it
             # and then convert it back to a string when we're finished
             validated_data_dict = json.loads(pkg_dict['validated_data_dict'])
-            log.debug(pprint(validated_data_dict))
+            #log.debug(pprint(validated_data_dict))
         except Exception as e:
             log.error(str(e))
 
@@ -107,8 +113,8 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
         qdes_facets = ['classification', 'topic']
 
         for facet in qdes_facets:
-            if pkg_dict.get('extras_' + facet, None):
-                pkg_dict.pop('extras_' + facet)
+            # if pkg_dict.get('extras_' + facet, None):
+            #     pkg_dict.pop('extras_' + facet)
 
             field_value = pkg_dict.get(facet, None)
 
@@ -116,7 +122,8 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
                 try:
                     items = json.loads(field_value)
                     if items:
-                        pkg_dict[facet] = [item.split('/')[-1] for item in items]
+                        # http://registry.it.csiro.au/def/datacite/resourceType/Workflow
+                        pkg_dict[facet] = [item for item in items]
 
                         # We don't want to do this because when you load the dataset
                         # for editing it comes from solr and the URIs have been lost
