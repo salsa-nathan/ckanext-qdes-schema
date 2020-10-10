@@ -26,3 +26,7 @@ iso-8601-duration:
 autocomplete:
   contents:
     - autocomplete.js
+
+dataservice:
+  contents:
+    - dataservice.js

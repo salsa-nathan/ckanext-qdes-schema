@@ -314,12 +314,5 @@
       "label": "Organization",
       "preset": "dataset_organization"
     }
-  ],
-  "resource_fields": [
-    {
-      "field_name": "name",
-      "label": "Name",
-      "form_placeholder": "eg. January 2011 Gold Prices"
-    }
   ]
 }
