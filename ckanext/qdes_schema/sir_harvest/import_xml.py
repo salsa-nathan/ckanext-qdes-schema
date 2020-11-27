@@ -10,7 +10,7 @@ from datetime import datetime as dt
 
 def get_remote_ckan():
     remoteCKAN = RemoteCKAN(
-        os.environ['LAGOON_ROUTE'], 
+        os.environ['LAGOON_ROUTE'],
         os.environ['HARVEST_API_KEY']
     )
     return remoteCKAN
@@ -111,10 +111,10 @@ def main():
                 for field in resource:
                     if field in distinct_resource_fields:
                         distinct_resource_fields[field].append(resource.get(field)) if resource.get(field) not in distinct_resource_fields[field] else distinct_resource_fields[field]
-            
+
             # pprint('parent_package')
             # pprint(package)
-            # create_package(remoteCKAN, package)
+            create_package(remoteCKAN, package)
 
         # Create child packages with parent package id
         for package in child_packages:
@@ -129,15 +129,16 @@ def main():
 
             # pprint('package')
             # pprint(package)
-            parent_package = next((parent_package for parent_package in parent_packages if package.get('parent_identifier', None) in [parent_package.get('identifiers') if parent_package.get('identifiers') else []]), None)
+            parent_package = next((parent_package for parent_package in parent_packages if package.get('parent_identifier', None)
+                                   in [parent_package.get('identifiers') if parent_package.get('identifiers') else []]), None)
             if parent_package:
                 print('parent package found {0} for {1}'.format(parent_package.get('title'), package.get('title')))
                 package['series_or_collection'] = json.dumps([{"id": parent_package.get('id'), "text": parent_package.get('title')}])
 
-            # create_package(remoteCKAN, package)
+            create_package(remoteCKAN, package)
 
-        pprint(distinct_package_fields)
-        pprint(distinct_resource_fields)
+        # pprint(distinct_package_fields)
+        # pprint(distinct_resource_fields)
 
     if error_log:
         print(json.dumps(error_log, indent=2))
