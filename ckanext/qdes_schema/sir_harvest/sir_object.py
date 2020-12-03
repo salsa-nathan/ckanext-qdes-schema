@@ -193,7 +193,7 @@ class SirObject:
         return {'notes': notes}
 
     def get_topic(self):
-        topic_term = ''
+        topic_term = None
         # /MD_Metadata/identificationInfo/MD_DataIdentification/topicCategory/MD_TopicCategoryCode
         topicCategoryCode = self.root.find('gmd:identificationInfo/gmd:MD_DataIdentification/gmd:topicCategory/gmd:MD_TopicCategoryCode', self.ns)
         if topicCategoryCode != None:
