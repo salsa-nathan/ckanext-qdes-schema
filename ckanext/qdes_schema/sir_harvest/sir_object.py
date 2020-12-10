@@ -587,7 +587,7 @@ class SirObject:
         linkage = self.root.find(
             'gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL', self.ns)
         if linkage != None:
-            url = linkage.text
+            url = helpers.fix_url(linkage.text)
         else:
             # Set default value?
             self.log('url: No value')
@@ -613,6 +613,8 @@ class SirObject:
             'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useConstraints/gmd:MD_RestrictionCode/../../gmd:useLimitation/gco:CharacterString', self.ns)
         if useLimitation != None:
             rights_statement = useLimitation.text
+            # Rights statement is not displayed in a HTML markup textbox so the below copyright statement '&copy;' needs to be replaced with '©'
+            rights_statement = rights_statement.replace('&copy;', '©').replace('&copy', '©')
         else:
             # Set default value?
             self.log('rights_statement: No value')
@@ -669,7 +671,7 @@ class SirObject:
         url = self.root.find(
             'gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL', self.ns)
         if url != None:
-            resource_service_api_endpoint = url.text
+            resource_service_api_endpoint = helpers.fix_url(url.text)
         else:
             self.log('resource_service_api_endpoint: No value')
 
@@ -681,7 +683,9 @@ class SirObject:
         resource_rights_statement = None
         useLimitation = self.root.find('gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString', self.ns)
         if useLimitation != None:
-            resource_rights_statement = useLimitation.text
+            rights_statement = useLimitation.text
+            # Rights statement is not displayed in a HTML markup textbox so the below copyright statement '&copy;' needs to be replaced with '©'
+            rights_statement = rights_statement.replace('&copy;', '©').replace('&copy', '©')
         else:
             self.log('resource_rights_statement: No value')
 
