@@ -55,7 +55,6 @@
               <tr>
                 <th scope="row" colspan="2">{{ _('Spatial coverage') }}</th>
               </tr>
-
               {% do spatial_coverage_has_value.update({'show_label': 0}) %}
             {% endif %}
 
@@ -70,6 +69,14 @@
         {%- endfor -%}
 
       {% endblock %}
+      <tr>
+        <th scope="row" class="dataset-label">
+          Data Catalogue ID
+        </th>
+        <td class="dataset-details">
+          {{ pkg_dict.get('id') }}
+        </td>
+      </tr>
     </tbody>
   </table>
 

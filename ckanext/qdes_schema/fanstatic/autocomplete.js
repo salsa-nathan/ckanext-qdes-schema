@@ -25,6 +25,7 @@ jQuery(document).ready(function () {
         createtags: true,
         key: false,
         label: false,
+        title: false,
         items: 10,
         source: null,
         tokensep: ',',
@@ -119,6 +120,10 @@ jQuery(document).ready(function () {
           return false;
         });
 
+        this.el.on('select2-selecting', function (e) {
+            $('.tooltip').remove();
+        });
+
         this._select2 = select2;
       },
 
@@ -152,18 +157,82 @@ jQuery(document).ready(function () {
           source = source.replace("{vocabularyServiceName}", this.options.vocabularyServiceName);
         }
         var client = this.sandbox.client;
+        var parseCompletions = this.parseCompletions;
         var options = {
           format: function (data) {
             var completion_options = jQuery.extend(options, { objects: true });
             return {
-              results: client.parseCompletions(data, completion_options)
+              results: parseCompletions(data, completion_options)
             }
           },
           key: this.options.key,
-          label: this.options.label
+          label: this.options.label,
+          title: this.options.title
         };
 
         return client.getCompletions(source, options, fn);
+      },
+
+    /* Copied from ckan/public/base/javascript/client.js and modified to add title property to object returned 
+     * Takes a JSON response from an auto complete endpoint and normalises
+     * the data into an array of strings. This also will remove duplicates
+     * from the results (this is case insensitive).
+     *
+     * data    - The parsed JSON response from the server.
+     * options - An object of options for the method.
+     *           objects: If true returns an object of results.
+     *
+     * Examples
+     *
+     *   jQuery.getJSON(tagCompletionUrl, function (data) {
+     *     var parsed = client.parseCompletions(data);
+     *   });
+     *
+     * Returns the parsed object.
+     */
+      parseCompletions: function (data, options) {
+        if (typeof data === 'string') {
+          // Package completions are returned as a crazy string. So we handle
+          // them separately.
+          return this.parsePackageCompletions(data, options);
+        }
+
+        var map = {};
+        // If given a 'result' array then convert it into a Result dict inside a Result dict.
+        // new syntax (not used until all browsers support arrow notation):
+        //data = data.result ? { 'ResultSet': { 'Result': data.result.map(x => ({'Name': x})) } } : data;
+        // compatible syntax:
+        data = data.result ? { 'ResultSet': { 'Result': data.result.map(function (val) { return { 'Name': val } }) } } : data;
+        // If given a Result dict inside a ResultSet dict then use the Result dict.
+        var raw = jQuery.isArray(data) ? data : data.ResultSet && data.ResultSet.Result || {};
+
+        var items = jQuery.map(raw, function (item) {
+          var key = typeof options.key != 'undefined' ? item[options.key] : false;
+          var label = typeof options.label != 'undefined' ? item[options.label] : false;
+          var title = typeof options.title != 'undefined' ? item[options.title] : false;
+
+          item = typeof item === 'string' ? item : item.name || item.Name || item.Format || '';
+          item = jQuery.trim(item);
+
+          key = key ? key : item;
+          label = label ? label : item;
+          title = title ? title : '';
+
+          var lowercased = item.toLowerCase();
+          var returnObject = options && options.objects === true;
+
+          if (lowercased && !map[lowercased]) {
+            map[lowercased] = 1;
+            return returnObject ? { id: key, text: label, title: title } : item;
+          }
+
+          return null;
+        });
+
+        // Remove duplicates.
+        items = jQuery.grep(items, function (item) { return item !== null; });
+
+        return items;
       },
 
       /* Looks up the completions for the provided text but also provides a few
@@ -224,6 +293,14 @@ jQuery(document).ready(function () {
         if (container) {
           // Append the select id to the element for styling.
           container.attr('data-value', state.id);
+          // Add container title attribute either from select element or state object property
+          if (state.element && state.element[0]) {
+            container.prop('title', state.element[0].title);
+          }
+          else if (state.title) {
+            container.prop('title', state.title);
+          }
+          container.on("mouseover", this._initialiseTooltip.bind(this));
         }
 
         var result = [];
@@ -326,6 +403,32 @@ jQuery(document).ready(function () {
             var e = jQuery.Event("keydown", { which: 13 });
             jQuery(event.target).trigger(e);
           }, 10);
+        }
+      },
+
+      /* Initialise the elements bootstrap tooltip
+       *
+       * Returns nothing.
+       */            
+      _initialiseTooltip : function (event) {
+        // Only initialise tooltip if it has not been initialised yet
+        if(jQuery(event.target).data('bs.tooltip') === undefined) {
+          jQuery(event.target).tooltip({
+            "placement": "auto",
+            "delay": {"show": 500, "hide": 100},
+            "container": 'body'
+          });
+          setTimeout(this._showTooltip, 500, event.target);
+        }
+      },
+
+      /* Show the tooltip after its been initialised only if the mouse is still hovering over the element
+       *
+       * Returns nothing.
+       */
+      _showTooltip : function (container) {
+        if(jQuery(container).is(":hover")) {
+          jQuery(container).tooltip('show');
         }
       }
     };

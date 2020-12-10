@@ -37,7 +37,8 @@
       "validators": "scheming_required",
       "recommended": true,
       "form_attrs": {
-        "class": "form-control"
+        "class": "form-control",
+        "data-module-title": "title"
       },
       "form_include_blank_choice": true
     },
@@ -72,7 +73,10 @@
       "preset": "qdes_secure_vocab_service_autocomplete",
       "vocabulary_service_name": "point-of-contact",
       "display_group": "description",
-      "form_include_blank_choice": true
+      "form_include_blank_choice": true,
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "url",
@@ -81,7 +85,7 @@
       "display_property": "foaf:homepage",
       "display_snippet": "link.html",
       "display_group": "description",
-      "validators": "url_validator qdes_uri_validator"
+      "validators": "ignore_missing url_validator qdes_uri_validator"
     },
     {
       "field_name": "dataset_language",
@@ -91,7 +95,8 @@
       "preset": "controlled_vocabulary_multi_select",
       "vocabulary_service_name": "dataset_language",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "first_choice": "English",
       "form_include_blank_choice": true
@@ -105,7 +110,8 @@
       "vocabulary_service_name": "topic",
       "validators": "scheming_required",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "form_include_blank_choice": true
     },
@@ -131,7 +137,8 @@
       "preset": "controlled_vocabulary_multi_select",
       "vocabulary_service_name": "standards",
       "form_attrs": {
-        "class": "form-control"
+        "class": "form-control",
+        "data-module-title": "title"
       },
       "recommended": true,
       "form_include_blank_choice": true
@@ -143,7 +150,7 @@
       "display_snippet": "qdes_text_url.html",
       "display_group": "access",
       "recommended": true,
-      "validators": "url_validator qdes_uri_validator"
+      "validators": "ignore_missing url_validator qdes_uri_validator"
     },
     {
       "field_name": "api_address",
@@ -152,7 +159,7 @@
       "display_snippet": "qdes_text_url.html",
       "display_group": "access",
       "recommended": true,
-      "validators": "url_validator qdes_uri_validator"
+      "validators": "ignore_missing url_validator qdes_uri_validator"
     },
     {
       "field_name": "service_uri",
@@ -161,7 +168,7 @@
       "display_snippet": "qdes_text_url.html",
       "display_group": "access",
       "recommended": true,
-      "validators": "url_validator qdes_uri_validator"
+      "validators": "ignore_missing url_validator qdes_uri_validator"
     },
     {
       "field_name": "service_status",
@@ -169,7 +176,10 @@
       "display_property": "adms:status",
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "service_status",
-      "display_group": "status"
+      "display_group": "status",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "service_creation_date",
@@ -216,24 +226,15 @@
       "field_name": "contact_publisher",
       "label": "Publisher",
       "display_property": "dcterms:publisher",
-      "preset": "controlled_vocabulary_single_select",
-      "vocabulary_service_name": "contact_publisher",
       "display_group": "contacts",
-      "required": true,
-      "form_include_blank_choice": true
+      "required": true
     },
     {
       "field_name": "contact_creator",
       "label": "Creator",
       "display_property": "dcterms:creator",
-      "preset": "controlled_vocabulary_multi_select",
-      "vocabulary_service_name": "contact_creator",
       "display_group": "contacts",
-      "required": false,
-      "form_include_blank_choice": true,
-      "form_attrs": {
-        "class": "form-control"
-      }
+      "required": false
     },
     {
       "field_name": "contact_other_party",
@@ -246,16 +247,9 @@
           "field_name": "the-party",
           "label": "The party",
           "form_snippet": "text.html",
-          "display_snippet": "qdes_secure_vocabulary_text.html",
           "display_property": "prov:agent",
-          "vocabulary_service_name": "the-party",
           "form_attrs": {
-            "data-module": "qdes_autocomplete",
-            "data-module-source": "/ckan-admin/vocabulary-services/secure-autocomplete/{vocabularyServiceName}?incomplete=?",
-            "data-module-key": "value",
-            "data-module-label": "name",
-            "data-module-minimum-input-length": 3,      
-            "data-module-create-search-choice": true
+            "class": "form-control"
           }
         },
         {
@@ -266,7 +260,8 @@
           "vocabulary_service_name": "nature-of-their-responsibility",
           "choices_helper": "scheming_vocabulary_service_choices",
           "form_attrs": {
-            "class": "form-control"
+            "class": "form-control",
+            "data-module-title": "title"
           },
           "form_include_blank_choice": true
         }
@@ -280,7 +275,8 @@
       "preset": "controlled_vocabulary_multi_select",
       "vocabulary_service_name": "classification_and_access_restrictions",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "form_include_blank_choice": true,
       "recommended": true
@@ -301,7 +297,10 @@
       "vocabulary_service_name": "license",
       "display_group": "rights & licensing",
       "required": true,
-      "form_include_blank_choice": true
+      "form_include_blank_choice": true,
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "specialized_license",

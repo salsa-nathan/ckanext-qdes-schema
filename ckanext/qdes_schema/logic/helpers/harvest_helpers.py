@@ -1,3 +1,6 @@
+import urllib as urllib
+
+
 def get_mapped_update_frequency(update_frequency):
     # Map Update frequency, we can't use get_vocab_value because some of the values are custom (can't be matched 1:1).
     # The below frequency value to filter based on this value, use below
@@ -61,3 +64,22 @@ def get_vocabulary_service_term(destination, query, vocabulary_service_name, deb
             print('>>>')
     except Exception as e:
         print(str(e))
+
+
+def fix_url(url):
+    parsed_url = urllib.parse.urlparse(url)
+
+    if parsed_url.query:
+        parsed_query_params = urllib.parse.parse_qs(parsed_url.query)
+        query = urllib.parse.urlencode(parsed_query_params, doseq=True)
+
+        return urllib.parse.urlunparse((
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            query,
+            parsed_url.fragment,
+        ))
+
+    return None

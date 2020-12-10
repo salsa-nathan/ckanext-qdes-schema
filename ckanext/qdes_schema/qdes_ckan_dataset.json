@@ -48,7 +48,8 @@
       "validators": "scheming_required",
       "required": true,
       "form_attrs": {
-        "class": "form-control"
+        "class": "form-control",
+        "data-module-title": "title"
       },
       "form_include_blank_choice": true
     },
@@ -102,7 +103,8 @@
       "preset": "controlled_vocabulary_multi_select",
       "vocabulary_service_name": "dataset_language",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "first_choice": "English",
       "form_include_blank_choice": true
@@ -116,7 +118,8 @@
       "vocabulary_service_name": "topic",
       "validators": "scheming_required",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "required": true,
       "form_include_blank_choice": true
@@ -143,7 +146,8 @@
           "vocabulary_service_name": "observed-property",
           "choices_helper": "scheming_vocabulary_service_choices",
           "form_attrs": {
-            "data-module": "qdes_autocomplete"
+            "data-module": "qdes_autocomplete",
+            "data-module-title": "title"
           },
           "form_include_blank_choice": true
         },
@@ -155,7 +159,8 @@
           "vocabulary_service_name": "unit-of-measure",
           "choices_helper": "scheming_vocabulary_service_choices",
           "form_attrs": {
-            "data-module": "qdes_autocomplete"
+            "data-module": "qdes_autocomplete",
+            "data-module-title": "title"
           },
           "form_include_blank_choice": true
         }
@@ -191,7 +196,10 @@
       "display_group": "temporal content",
       "display_property": "tempqdcat:temporalRange",
       "preset": "controlled_vocabulary_single_select",
-      "vocabulary_service_name": "temporal_resolution_ranges"
+      "vocabulary_service_name": "temporal_resolution_ranges",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "spatial_lower_left",
@@ -263,7 +271,8 @@
           "choices_helper": "scheming_vocabulary_service_choices",
           "vocabulary_service_name": "dimension",
           "form_attrs": {
-            "class": "form-control"
+            "class": "form-control",
+            "data-module-title": "title"
           }
         },
         {
@@ -291,7 +300,8 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "spatial_name_code",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "display_property": "dcterms:spatial",
       "display_group": "spatial coverage"
@@ -302,7 +312,10 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "spatial_representation",
       "display_property": "qdcat:hasSpatialRepresentation",
-      "display_group": "spatial details"
+      "display_group": "spatial details",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "spatial_datum_crs",
@@ -310,7 +323,10 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "spatial_datum_crs",
       "display_property": "qeox:inCRS",
-      "display_group": "spatial details"
+      "display_group": "spatial details",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "spatial_resolution",
@@ -318,7 +334,10 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "spatial_resolution",
       "display_property": "qdcat:spatialResolution",
-      "display_group": "spatial details"
+      "display_group": "spatial details",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "quality_measure",
@@ -337,7 +356,8 @@
           "choices_helper": "scheming_vocabulary_service_choices",
           "vocabulary_service_name": "measurement",
           "form_attrs": {
-            "class": "form-control"
+            "class": "form-control",
+            "data-module-title": "title"
           }
         },
         {
@@ -408,7 +428,10 @@
       "vocabulary_service_name": "contact_creator",
       "display_group": "related and lineage",
       "display_property": "prov:wasAssociatedWith",
-      "sub_heading": "lineage"
+      "sub_heading": "lineage",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "cited_in",
@@ -436,7 +459,10 @@
       "vocabulary_service_name": "contact_publisher",
       "display_group": "contacts",
       "required": true,
-      "form_include_blank_choice": true
+      "form_include_blank_choice": true,
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "contact_creator",
@@ -453,7 +479,8 @@
         "data-module-key": "value",
         "data-module-label": "name",
         "data-module-minimum-input-length": 3,      
-        "data-module-create-search-choice": true
+        "data-module-create-search-choice": true,
+        "data-module-title": "title"
       }
     },
     {
@@ -476,7 +503,8 @@
             "data-module-key": "value",
             "data-module-label": "name",
             "data-module-minimum-input-length": 3,      
-            "data-module-create-search-choice": true
+            "data-module-create-search-choice": true,
+            "data-module-title": "title"
           }
         },
         {
@@ -487,7 +515,8 @@
           "vocabulary_service_name": "nature-of-their-responsibility",
           "choices_helper": "scheming_vocabulary_service_choices",
           "form_attrs": {
-            "class": "form-control"
+            "class": "form-control",
+            "data-module-title": "title"
           },
           "form_include_blank_choice": true
         }
@@ -507,7 +536,10 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "publication_status",
       "display_group": "status",
-      "required": true
+      "required": true,
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "dataset_creation_date",
@@ -540,7 +572,10 @@
       "display_property": "dcterms:accrualPeriodicity",
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "update_schedule",
-      "display_group": "status"
+      "display_group": "status",
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "classification_and_access_restrictions",
@@ -550,7 +585,8 @@
       "preset": "controlled_vocabulary_multi_select",
       "vocabulary_service_name": "classification_and_access_restrictions",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       },
       "form_include_blank_choice": true,
       "required": true
@@ -570,8 +606,11 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "license",
       "display_group": "rights & licensing",
-      "required": true,
-      "form_include_blank_choice": true
+      "recommended": true,
+      "form_include_blank_choice": true,
+      "form_attrs": {
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "specialized_license",
@@ -621,7 +660,14 @@
       "display_property": "dcterms:format",
       "preset": "qdes_vocab_service_autocomplete",
       "vocabulary_service_name": "format",
-      "required": true
+      "required": true,
+      "form_attrs": {
+        "data-module": "qdes_autocomplete",
+        "data-module-source": "/ckan-admin/vocabulary-service/term-autocomplete/format?incomplete=?",
+        "data-module-key": "value",
+        "data-module-label": "name",
+        "data-module-title": "title"
+      }
     },
     {
       "field_name": "compression",
@@ -630,7 +676,8 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "compression",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       }
     },
     {
@@ -640,7 +687,8 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "packaging",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       }
     },
     {
@@ -665,7 +713,8 @@
       "label": "Service API end-point",
       "display_property": "dcterms:conformsTo",
       "display_snippet": "qdes_multi_text_url.html",
-      "form_snippet": "qdes_multi_text.html"
+      "form_snippet": "qdes_multi_text.html",
+      "validators": "ignore_missing qdes_uri_validator"
     },
     {
       "field_name": "data_services",
@@ -704,7 +753,8 @@
       "preset": "controlled_vocabulary_single_select",
       "vocabulary_service_name": "license",
       "form_attrs": {
-        "data-module": "qdes_autocomplete"
+        "data-module": "qdes_autocomplete",
+        "data-module-title": "title"
       }
     }
   ]

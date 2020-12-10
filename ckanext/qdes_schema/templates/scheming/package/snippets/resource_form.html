@@ -19,10 +19,12 @@
     {% asset 'qdes_schema/repeater' %}
     {% asset 'qdes_schema/repeating-fields' %}
     {% asset 'qdes_schema/autocomplete' %}
+    {% asset 'qdes_schema/style' %}
   {% else %}
     {% resource 'qdes_schema/jquery.repeater.js' %}
     {% resource 'qdes_schema/repeating-fields.js' %}
     {% resource 'qdes_schema/autocomplete.js' %}
+    {% resource 'qdes_schema/style.css' %}
   {% endif %}
 
   {%- if not dataset_type -%}

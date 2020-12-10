@@ -10,6 +10,7 @@ from ckanext.qdes_schema.logic.action import (
 )
 from ckanext.relationships import helpers as ckanext_relationships_helpers
 from ckanext.qdes_schema.logic.helpers import indexing_helpers, relationship_helpers
+from collections import OrderedDict
 from pprint import pformat
 
 log = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IValidators)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IFacets, inherit=True)
 
     # IBlueprint
 
@@ -38,6 +40,13 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
         '''
         helpers.update_related_resources(context, pkg_dict, False)
 
+        # Remove `ignore_auth` from the context - in case it was set
+        # lower in the chain, i.e. by ckanext-relationships
+        # `package_relationship_create` auth function
+        ignore_auth = context.get('ignore_auth', None)
+        if ignore_auth:
+            context.pop('ignore_auth')
+
         return pkg_dict
 
     def after_update(self, context, pkg_dict):
@@ -46,6 +55,13 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
         has been updated.
         '''
         helpers.update_related_resources(context, pkg_dict, True)
+
+        # Remove `ignore_auth` from the context - in case it was set
+        # lower in the chain, i.e. by ckanext-relationships
+        # `package_relationship_create` auth function
+        ignore_auth = context.get('ignore_auth', None)
+        if ignore_auth:
+            context.pop('ignore_auth')
 
         return pkg_dict
 
@@ -61,6 +77,11 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
         dataset_type = pkg_dict.get('dataset_type', None)
 
         if dataset_type:
+            # Get collection_package_id for each dataset that part of collection.
+            collection_package_id = indexing_helpers.get_collection_ids(pkg_dict)
+            if collection_package_id:
+                pkg_dict['collection_package_id'] = collection_package_id
+
             # Process the package's CKAN resources (aka "Data Access" (QDCAT), aka "Distribution" (DCAT))
             # The values stored in `res_format` are URIs for the vocabulary term
             # A new field was added to the solr schema.xml to store the labels of the resource formats
@@ -94,6 +115,56 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
 
             if license_label:
                 pkg_dict['license_label'] = license_label
+
+            # General classification.
+            general_classification = indexing_helpers.convert_vocabulary_terms_json_to_labels(
+                dataset_type,
+                'classification',
+                pkg_dict.get('classification', '')
+            )
+
+            if general_classification:
+                pkg_dict['general_classification'] = general_classification
+
+            # Publication status.
+            publication_status_label = indexing_helpers.convert_term_uri_to_label(
+                dataset_type,
+                'publication_status',
+                pkg_dict.get('publication_status', '')
+            )
+
+            if publication_status_label:
+                pkg_dict['publication_status_label'] = publication_status_label
+
+            # Access restriction.
+            classification_and_access_restrictions_label = indexing_helpers.convert_vocabulary_terms_json_to_labels(
+                dataset_type,
+                'classification_and_access_restrictions',
+                pkg_dict.get('classification_and_access_restrictions', '')
+            )
+
+            if classification_and_access_restrictions_label:
+                pkg_dict['classification_and_access_restrictions_label'] = classification_and_access_restrictions_label
+
+            # Service status.
+            service_status_label = indexing_helpers.convert_term_uri_to_label(
+                dataset_type,
+                'service_status',
+                pkg_dict.get('service_status', '')
+            )
+
+            if service_status_label:
+                pkg_dict['service_status_label'] = service_status_label
+
+            # Standards.
+            standards_label = indexing_helpers.convert_vocabulary_terms_json_to_labels(
+                dataset_type,
+                'standards',
+                pkg_dict.get('standards', '')
+            )
+
+            if standards_label:
+                pkg_dict['standards_label'] = standards_label
 
         return pkg_dict
 
@@ -146,12 +217,16 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
             'qdes_relationship_types_choices': helpers.qdes_relationship_types_choices,
             'get_related_versions': helpers.get_related_versions,
             'get_superseded_versions': relationship_helpers.get_superseded_versions,
+            'has_newer_version': relationship_helpers.has_newer_version,
             'get_all_relationships': helpers.get_all_relationships,
             'convert_relationships_to_related_resources': helpers.convert_relationships_to_related_resources,
             'get_qld_bounding_box_config': helpers.get_qld_bounding_box_config,
             'get_package_dict': helpers.get_package_dict,
             'get_invalid_uris': helpers.get_invalid_uris,
             'wrap_url_within_text_as_link': helpers.wrap_url_within_text_as_link,
+            'get_series_relationship': helpers.get_series_relationship,
+            'is_collection': helpers.is_collection,
+            'is_part_of_collection': helpers.is_part_of_collection,
         }
 
     def get_multi_textarea_values(self, value):
@@ -174,3 +249,52 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
             'get_all_predecessor_versions': get.all_predecessor_versions,
             'get_all_relationships': get.all_relationships
         }
+
+    # IFacets
+    def dataset_facets(self, facets_dict, package_type):
+
+        # Remove the default facets we don't want
+        if 'license_id' in facets_dict:
+            facets_dict.pop('license_id')
+        if 'tags' in facets_dict:
+            facets_dict.pop('tags')
+        if 'groups' in facets_dict:
+            facets_dict.pop('groups')
+        if 'organization' in facets_dict:
+            facets_dict.pop('organization')
+
+        facets_dict['collection_package_id'] = 'Collections'
+        facets_dict['type'] = plugins.toolkit._('Dataset or Data service')
+        facets_dict['general_classification'] = plugins.toolkit._('General classification')
+        facets_dict['topic_labels'] = plugins.toolkit._('Topic or theme')
+        facets_dict['publication_status_label'] = plugins.toolkit._('Status')
+        facets_dict['service_status_label'] = plugins.toolkit._('Status')
+        facets_dict['classification_and_access_restrictions_label'] = plugins.toolkit._('Access restrictions')
+        facets_dict['resource_format_labels'] = plugins.toolkit._('Primary format')
+        facets_dict['standards_label'] = plugins.toolkit._('Data service standards')
+
+        # Reorder facets.
+        if facets_dict:
+            if package_type == 'dataset':
+                facets_order = [
+                    'general_classification',
+                    'topic_labels',
+                    'publication_status_label',
+                    'classification_and_access_restrictions_label',
+                    'resource_format_labels',
+                    'type',
+                    'collection_package_id',
+                ]
+                ordered_facets = OrderedDict((k, facets_dict[k]) for k in facets_order)
+            else:
+                facets_order = [
+                    'general_classification',
+                    'topic_labels',
+                    'service_status_label',
+                    'classification_and_access_restrictions_label',
+                    'standards_label',
+                    'collection_package_id',
+                ]
+                ordered_facets = OrderedDict((k, facets_dict[k]) for k in facets_order)
+
+            return ordered_facets

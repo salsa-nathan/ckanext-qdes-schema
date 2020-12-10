@@ -10,6 +10,10 @@
         <div class="alert alert-warning">
           This version has been superseded - <a href="{{ h.url_for('dataset.read', id=versions[0].id) }}">click here to see the latest version</a>.
         </div>
+    {% elif h.has_newer_version(pkg.id, versions) %}
+        <div class="alert alert-warning">
+            Newer versions of the dataset may exist - <a href="{{ h.url_for('dataset.read', id=versions[0].id) }}">click here to see the latest version</a>.
+        </div>
     {% endif %}
 
     {% if versions|length > 1 and h.check_access('package_update', {'id':pkg.id }) %}
@@ -28,6 +32,8 @@
     {% endif %}
 
     {{ super() }}
+
+    {% snippet "/snippets/collection.html", pkg=pkg %}
 
     {% if versions %}
         {% snippet "/package/snippets/dataset_versions.html", versions=versions, pkg=pkg %}

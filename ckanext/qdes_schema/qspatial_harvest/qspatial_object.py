@@ -1,6 +1,7 @@
 import ckan.lib.munge as munge
 import json
 import re
+from datetime import datetime
 
 import xml.etree.ElementTree as ET
 from pprint import pformat, pprint
@@ -42,6 +43,12 @@ class QSpatialObject:
             # print(message)
 
     def get_ckan_package_dict(self):
+        
+        # Populate some of the other fields that throw errors from scheming validation
+        self.package['type'] = 'dataset'
+        today = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S')
+        self.package['dataset_last_modified_date'] = today
+        self.package['metadata_review_date'] = today
 
         self.package.update(self.get_title())
         self.log('<----------------------------------------------------------------------------------------------------------------------------------------------------------->')
@@ -70,15 +77,12 @@ class QSpatialObject:
         self.package.update(self.get_spatial_content_resolution())
         self.package.update(self.get_spatial_representation())
         self.package.update(self.get_spatial_datum_crs())
-        self.package.update(self.get_dataset_release_date())
+        self.package.update(self.get_dataset_release_date(today))
         self.package.update(self.get_update_schedule())
         self.package.update(self.get_quality_description())
         self.package.update(self.get_url())
         self.package.update(self.get_lineage_description())
         self.package.update(self.get_rights_statement())
-
-        # # Populate some of the other fields that throw errors from scheming validation
-        # self.package['metadata_review_date_reviewed'] = dt.utcnow().isoformat()
 
         # # @TODO: These ones should probably have the ignore_missing validator added to themx
         # for field in [
@@ -499,7 +503,7 @@ class QSpatialObject:
         # self.log('spatial_datum_crs: {}'.format(spatial_datum_crs))
         return {'spatial_datum_crs': spatial_datum_crs}
 
-    def get_dataset_release_date(self):
+    def get_dataset_release_date(self, default_date):
         dataset_release_date = None
         date = self.root.find('gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date/gmd:date/gco:Date', self.ns)
         if date != None:
@@ -507,9 +511,10 @@ class QSpatialObject:
         else:
             # Set default value?
             self.log('dataset_release_date: No value')
+            dataset_release_date = default_date
 
         # self.log('dataset_release_date: {}'.format(dataset_release_date))
-        return {'dataset_release_date': dataset_release_date}
+        return {'dataset_release_date': dataset_release_date, 'dataset_creation_date': dataset_release_date}
 
     def get_update_schedule(self):
         update_schedule = None
@@ -587,7 +592,7 @@ class QSpatialObject:
         linkage = self.root.find(
             'gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL', self.ns)
         if linkage != None:
-            url = linkage.text
+            url = helpers.fix_url(linkage.text)
         else:
             # Set default value?
             self.log('url: No value')
@@ -613,6 +618,8 @@ class QSpatialObject:
             'gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useConstraints/gmd:MD_RestrictionCode/../../gmd:useLimitation/gco:CharacterString', self.ns)
         if useLimitation != None:
             rights_statement = useLimitation.text
+            # Rights statement is not displayed in a HTML markup textbox so the below copyright statement '&copy;' needs to be replaced with '©'
+            rights_statement = rights_statement.replace('&copy;', '©').replace('&copy', '©')
         else:
             # Set default value?
             self.log('rights_statement: No value')
@@ -669,7 +676,7 @@ class QSpatialObject:
         url = self.root.find(
             'gmd:distributionInfo/gmd:MD_Distribution/gmd:distributor/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource/gmd:linkage/gmd:URL', self.ns)
         if url != None:
-            resource_service_api_endpoint = url.text
+            resource_service_api_endpoint = helpers.fix_url(url.text)
         else:
             self.log('resource_service_api_endpoint: No value')
 
@@ -682,6 +689,8 @@ class QSpatialObject:
         useLimitation = self.root.find('gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints/gmd:useLimitation/gco:CharacterString', self.ns)
         if useLimitation != None:
             resource_rights_statement = useLimitation.text
+            # Rights statement is not displayed in a HTML markup textbox so the below copyright statement '&copy;' needs to be replaced with '©'
+            resource_rights_statement = resource_rights_statement.replace('&copy;', '©').replace('&copy', '©')
         else:
             self.log('resource_rights_statement: No value')
 

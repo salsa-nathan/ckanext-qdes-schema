@@ -1,4 +1,5 @@
 {% import 'macros/form.html' as form %}
+{% import 'macros/qdes_form.html' as qdes_form %}
 
 {% set default_classes = field.classes if 'classes' in field else [] %}
 
@@ -22,7 +23,8 @@
                       {%- if not form_restrict_choices_to or c.value in form_restrict_choices_to -%}
                         {%- do options.append({
                           'value': c.value|string,
-                          'text': h.scheming_language_text(c.label) }) -%}
+                          'text': h.scheming_language_text(c.label),
+                          'title': c.title|string if c.title is not none else ''  }) -%}
                       {%- endif -%}
                     {%- endfor -%}
                     {%- if field.get('sorted_choices') -%}
@@ -37,7 +39,7 @@
                       {%- set option_selected = None -%}
                     {%- endif -%}
                     
-                    {% call form.select(
+                    {% call qdes_form.select(
                         label=h.scheming_language_text(field.label),
                         options=options,
                         selected=option_selected,

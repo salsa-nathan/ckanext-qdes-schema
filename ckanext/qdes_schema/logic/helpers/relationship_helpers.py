@@ -82,6 +82,14 @@ def get_superseded_versions(package_id, versions):
     return superseded_versions
 
 
+def has_newer_version(package_id, versions):
+    for index, version in enumerate(versions):
+        if version['id'] == package_id and index > 0:
+            return True
+
+    return False
+
+
 def get_existing_relationship(subject_package_id, object_package_id, type):
     try:
         return Session.query(PackageRelationship) \

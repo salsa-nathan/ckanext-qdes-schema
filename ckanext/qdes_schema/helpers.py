@@ -3,6 +3,7 @@ import datetime
 import logging
 
 from ckan.model import Session
+from ckan.model.package_relationship import PackageRelationship
 from ckan.lib import helpers as core_helper
 from ckan.plugins.toolkit import config, h, get_action, get_converter, get_validator, Invalid, request
 from ckanext.qdes_schema.logic.helpers import relationship_helpers
@@ -61,7 +62,12 @@ def qdes_relationship_types_choices(field):
         # as it has the same value for forward and reverse
         unique_relationship_types = []
 
+        types = PackageRelationship.get_forward_types()
+
         for relationship_type in h.get_relationship_types():
+            if relationship_type not in types:
+                continue
+
             if relationship_type not in unique_relationship_types:
                 unique_relationship_types.append(relationship_type)
 
@@ -290,6 +296,40 @@ def get_invalid_uris(entity_id, pkg_dict):
 
 
 def wrap_url_within_text_as_link(value):
-    urlfinder = re.compile("(https?:[;\/?\\@&=+$,\[\]A-Za-z0-9\-_\.\!\~\*\'\(\)%][\;\/\?\:\@\&\=\+\$\,\[\]A-Za-z0-9\-_\.\!\~\*\'\(\)%#]*|[KZ]:\\*.*\w+)")
+    urlfinder = re.compile("(https?:[;\/?\\@&=+$,\[\]A-Za-z0-9\-_\.\!\~\*\'\(\)%][\;\/\?\:\@\&\=\+\$\,\[\]A-Za-z0-9\-_\.\!\~\*\'\(\)%#\{\}]*|[KZ]:\\*.*\w+)")
 
     return urlfinder.sub(r'<a href="\1">\1</a>', value)
+
+
+def get_series_relationship(package):
+    """
+    Return package series relationship.
+    """
+    # Get all relationship.
+    relationships = get_all_relationships(package.get('id'))
+
+    # Group hasPart/isPartOf relationship.
+    has_part = []
+    is_part_of = []
+    for relationship in relationships:
+        type = relationship.get('type')
+        if type == 'hasPart':
+            has_part.append(relationship)
+        elif type == 'isPartOf':
+            is_part_of.append(relationship)
+
+    return {'hasPart': has_part, 'isPartOf': is_part_of}
+
+
+def is_collection(series_relationship):
+    if series_relationship.get('hasPart'):
+        return True
+
+    return False
+
+
+def is_part_of_collection(series_relationship):
+    if series_relationship.get('isPartOf'):
+        return True
+
+    return False

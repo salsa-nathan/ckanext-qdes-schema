@@ -14,7 +14,7 @@
     {
       "preset_name": "controlled_vocabulary_single_select",
       "values": {
-        "form_snippet": "select.html",
+        "form_snippet": "qdes_select.html",
         "display_snippet": "controlled_vocabulary_single_select.html",
         "choices_helper": "scheming_vocabulary_service_choices",
         "validators": "scheming_required scheming_choices"

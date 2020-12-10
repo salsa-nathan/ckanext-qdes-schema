@@ -30,3 +30,7 @@ autocomplete:
 dataservice:
   contents:
     - dataservice.js
+
+style:
+  contents:
+    - style.css
