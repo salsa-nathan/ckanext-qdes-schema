@@ -8,14 +8,25 @@
     {% resource 'qdes_schema/publish.js' %}
   {% endif %}
 
-  {%-
-      snippet "package/snippets/validate_and_publish_metadata.html",
-        pkg=pkg, options=options, selected_opt=selected_opt,
-        data=data, pkg_errors=pkg_errors, res_errors=res_errors, valid=valid,
-        publication_message=publication_message
-  -%}
+  <div class="row">
+    <section class="qg-accordion qg-dark-accordion" aria-label="Accordion Label">
+      {%-
+          snippet "package/snippets/validate_and_publish_metadata.html",
+            pkg=pkg, options=options, selected_opt=selected_opt,
+            data=data, pkg_errors=pkg_errors, res_errors=res_errors, valid=valid,
+            publication_message=publication_message
+      -%}
 
-  {%-
-      snippet "package/snippets/external_publishing_details.html", publish_activities=publish_activities
-  -%}
+      {%-
+          snippet "package/snippets/unpublish_external_dataset.html",
+          pkg=pkg, options=options, published_distributions=h.get_published_distributions(pkg),
+          unpublish=unpublish
+      -%}
+
+      {%-
+          snippet "package/snippets/external_publishing_details.html", publish_activities=publish_activities
+      -%}
+    </section>
+  </div>
+
 {% endblock %}

@@ -1,0 +1,80 @@
+<article class="unpublish-wrapper">
+  <input id="unpublish-wrapper" type="checkbox" name="tabs" aria-controls="unpublish-wrapper-content" aria-expanded="true"
+         role="checkbox" tabindex="-1" checked>
+  <button class="acc-heading">
+    <label for="unpublish-wrapper" class="no-colon">
+      <span class="title">Unpublish records from external portals</span>
+      <span class="arrow"> <i></i></span>
+    </label>
+  </button>
+
+  <div class="collapsing-section" id="unpublish-wrapper-content">
+    <form method="post" action="{{ h.url_for('qdes_schema.unpublish_external_dataset_resource', id=pkg.id) }}" novalidate>
+    <div class="row">
+      <div class="col-md-4">
+        <label for="unpublish-resource">
+          Select distribution to unpublish
+        </label>
+      </div>
+      <div class="col-md-8">
+        <div class="form-group">
+          {% if not published_distributions.dataqld_dataset %}
+            No distributions.
+          {% else %}
+            <select id="unpublish-resource" name="unpublish_resource" class="form-control">
+              <option value="none">Select distribution</option>
+              {% for publish_log in published_distributions.dataqld_dataset %}
+                {% set ns = namespace() %}
+                {% for resource in pkg.resources %}
+                  {% if resource.id == publish_log.resource_id %}
+                    {% set ns.resource = resource %}
+                  {% endif %}
+                {% endfor %}
+                <option value="{{ publish_log.resource_id }}">{{ h.get_distribution_naming(pkg, ns.resource) }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <label for="schema-unpublish">Select schema to unpublish</label>
+      </div>
+      <div class="col-md-8">
+        <div class="form-group">
+          <select id="schema-unpublish" name="schema" class="form-control">
+            {% for option in options %}
+              {% if loop.first %}
+                <option value="{{ option.value }}">Select published portal</option>
+              {% else %}
+                <option value="{{ option.value }}">{{ option.text }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="row form-group">
+      <div class="col-md-10">
+        {% if unpublish == '1' %}
+          <div class="alert alert-info" role="alert">
+            The distribution has been queued for unpublishing.
+          </div>
+        {% elif unpublish == '0' %}
+          <div class="alert alert-error" role="alert">
+            The distribution could not be queued for unpublishing.
+          </div>
+        {% endif %}
+      </div>
+      <div class="col-md-2">
+        <button
+          class="btn btn-default btn-block unpublish"
+          type="submit" name="action" value="unpublish" disabled>Unpublish</button>
+      </div>
+    </div>
+  </form>
+  </div>
+</article>

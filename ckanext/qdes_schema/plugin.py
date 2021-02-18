@@ -293,6 +293,7 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
             'resource_has_published_to_external_schema': helpers.resource_has_published_to_external_schema,
             'get_publish_activities': helpers.get_publish_activities,
             'get_distribution_naming': helpers.get_distribution_naming,
+            'get_published_distributions': helpers.get_published_distributions,
         }
 
     def get_multi_textarea_values(self, value):

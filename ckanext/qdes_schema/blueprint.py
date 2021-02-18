@@ -4,6 +4,7 @@ import ckan.logic as logic
 import ckan.plugins.toolkit as toolkit
 import ckan.model as model
 import ckanext.qdes_schema.constants as constants
+import ckanext.qdes_schema.jobs as jobs
 import logging
 
 from ckan.common import _, c, request
@@ -96,6 +97,14 @@ def datasets_available(id):
 
 
 def datasets_schema_validation(id):
+    # Check the user has permission to clone the dataset
+    context = {
+        'model': model,
+        'user': c.user,
+        'auth_user_obj': c.userobj
+    }
+    toolkit.check_access('package_update', context, {'id': id})
+
     extra_vars = {}
     pkg = get_action('package_show')({}, {'id': id})
     pkg_validated = pkg.copy()
@@ -140,7 +149,56 @@ def datasets_schema_validation(id):
     # Load publish_log data.
     extra_vars['publish_activities'] = helpers.get_publish_activities(pkg)
 
+    # Process unpublish status.
+    extra_vars['unpublish'] = request.params.get('unpublish', None)
+
     return render('package/publish_metadata.html', extra_vars=extra_vars)
+
+
+def unpublish_external_dataset_resource(id):
+    # Check the user has permission to clone the dataset
+    context = {
+        'model': model,
+        'user': c.user,
+        'auth_user_obj': c.userobj
+    }
+    toolkit.check_access('package_update', context, {'id': id})
+
+    if not request.method == 'POST':
+        return
+
+    data = clean_dict(dict_fns.unflatten(tuplize_dict(parse_params(
+        request.form))))
+
+    pkg = get_action('package_show')({}, {'id': id})
+
+    # Create job.
+    resource_to_unpublish = {}
+    for resource in pkg.get('resources', []):
+        if resource.get('id') == data.get('unpublish_resource'):
+            resource_to_unpublish = resource
+
+    # Add to publish log.
+    unpublish = 0
+    try:
+        publish_log = get_action('create_publish_log')({}, {
+            'dataset_id': pkg.get('id'),
+            'resource_id': resource_to_unpublish.get('id'),
+            'trigger': constants.PUBLISH_TRIGGER_MANUAL,
+            'destination': data.get('schema'),
+            'status': constants.PUBLISH_STATUS_PENDING,
+            'action': constants.PUBLISH_ACTION_DELETE
+        })
+
+        # Add to job worker queue.
+        if publish_log:
+            toolkit.enqueue_job(jobs.unpublish_external_distribution, [publish_log.id, c.user])
+            unpublish = 1
+
+    except Exception as e:
+        log.error(str(e))
+
+    return h.redirect_to('/dataset/{}/publish?unpublish={}'.format(id, unpublish))
 
 
 qdes_schema.add_url_rule(u'/dataset/<id_or_name>/related-datasets', view_func=related_datasets)
@@ -150,3 +208,5 @@ qdes_schema.add_url_rule(u'/dataset/<id>/resource/<resource_id>/metadata', view_
 qdes_schema.add_url_rule(u'/dataservice/<id>/datasets-available', view_func=datasets_available)
 qdes_schema.add_url_rule(u'/dataset/<id>/publish', methods=[u'GET', u'POST'],
                          view_func=datasets_schema_validation)
+qdes_schema.add_url_rule(u'/dataset/<id>/unpublish-external', methods=[u'POST'],
+                         view_func=unpublish_external_dataset_resource)

@@ -485,11 +485,11 @@ def map_update_schedule(uri, schema):
 
 
 def dataset_has_published_to_external_schema(package_id):
-    return PublishLog.dataset_has_published_to_external(package_id)
+    return PublishLog.has_published(package_id, 'dataset')
 
 
 def resource_has_published_to_external_schema(resource_id):
-    return PublishLog.resource_has_published_to_external(resource_id)
+    return PublishLog.has_published(resource_id, 'resource')
 
 
 def get_distribution_naming(pkg, resource):
@@ -524,6 +524,10 @@ def get_publish_activities(pkg):
     resource_publish_logs = []
 
     for resource in pkg.get('resources'):
+        # @todo, for multiple portals, modify below statement
+        # maybe add more parameter called `portal` to get_recent_resource_log(),
+        # and do looping for all available portals.
+        # Currently only returning single portal for each resources.
         resource_publish_log = PublishLog.get_recent_resource_log(resource.get('id'))
         if resource_publish_log:
             # Get last success published date.
@@ -561,7 +565,11 @@ def get_publish_activities(pkg):
                 processed_unpublished_date = resource_publish_log.date_processed
 
             if resource_publish_log.status == constants.PUBLISH_STATUS_FAILED:
-                status = 'Publish error'
+                if resource_publish_log.action == constants.PUBLISH_ACTION_DELETE:
+                    status = 'Unpublish error'
+                else:
+                    status = 'Publish error'
+
 
             # Get portal.
             portal = ''
@@ -594,3 +602,7 @@ def get_publish_activities(pkg):
             resource_publish_logs.append(data)
 
     return resource_publish_logs
+
+
+def get_published_distributions(pkg):
+    return PublishLog.get_published_distributions(pkg)

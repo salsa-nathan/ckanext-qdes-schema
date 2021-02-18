@@ -7,7 +7,7 @@
 {% set is_series = True if series_relationship else False %}
 {% set is_series_parent = h.is_collection(series_relationship) if series_relationship else False %}
 
-<details class="row validate-publish" open
+<article class="validate-publish" open
          data-valid="{{ valid }}"
          data-public="{{ 1 if is_public else 0 }}"
          data-official-public="{{ 1 if is_official_public else 0 }}"
@@ -15,124 +15,134 @@
          data-series="{{ 1 if is_series else 0 }}"
          data-series-parent="{{ 1 if is_series_parent else 0 }}"
 >
-  <summary>Validate and publish records</summary>
+  <input id="validate-publish" type="checkbox" name="tabs"
+         aria-controls="validate-publish-content" aria-expanded="true"
+         role="checkbox" tabindex="-1" checked>
+  <button class="acc-heading">
+    <label for="validate-publish" class="no-colon">
+      <span class="title">Validate and publish records</span>
+      <span class="arrow"> <i></i></span>
+    </label>
+  </button>
 
-  <h2>Validate and publish records</h2>
+  <div class="collapsing-section" id="validate-publish-content">
+    <h2>Validate and publish records</h2>
 
-  <div class="alert alert-info" role="alert" style="display: none"></div>
+    <div class="alert alert-info" role="alert" style="display: none"></div>
 
-  <form method="post" action="{{ h.url_for('qdes_schema.datasets_schema_validation', id=pkg.id) }}" novalidate>
-    <div class="row">
-      <div class="col-md-4">
-        <label>
-          Select distribution to publish
-        </label>
-      </div>
-      <div class="col-md-8">
-        <div class="form-group">
-          {% if not pkg.resources %}
-            No distributions.
-          {% endif %}
-
-          {% for resource in pkg.resources %}
-            <label class="no-colon">
-              <input class="resources" type="checkbox" name="resources" value="{{ resource.id }}" {{ 'checked="checked"' if resource.id in data['resources'] else '' }} />
-              {{ h.get_distribution_naming(pkg, resource) }}
-            </label>
-            {% if not loop.last %}
-              <br/>
-            {% endif %}
-          {% endfor %}
+    <form method="post" action="{{ h.url_for('qdes_schema.datasets_schema_validation', id=pkg.id) }}" novalidate>
+      <div class="row">
+        <div class="col-md-4">
+          <label>
+            Select distribution to publish
+          </label>
         </div>
-      </div>
-    </div>
+        <div class="col-md-8">
+          <div class="form-group">
+            {% if not pkg.resources %}
+              No distributions.
+            {% endif %}
 
-    <div class="row">
-      <div class="col-md-4">
-        <label for="schema">Select schema to validate/publish</label>
-      </div>
-      <div class="col-md-8">
-        <div class="form-group">
-          <select id="schema" name="schema" class="form-control">
-            {% for option in options %}
-              <option value="{{ option.value }}" {{ 'selected="selected"' if data['schema'] == option.value else '' }}>{{ option.text }}</option>
+            {% for resource in pkg.resources %}
+              <label class="no-colon">
+                <input class="resources" type="checkbox" name="resources" value="{{ resource.id }}" {{ 'checked="checked"' if resource.id in data['resources'] else '' }} />
+                {{ h.get_distribution_naming(pkg, resource) }}
+              </label>
+              {% if not loop.last %}
+                <br/>
+              {% endif %}
             {% endfor %}
-          </select>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="row form-group">
-      <div class="col-md-10">
-        {% if pkg_errors or res_errors %}
-          {%- set schema = h.scheming_get_dataset_schema(pkg.type) -%}
-          <div class="error-explanation alert alert-error" role="alert">
-            <p>The <strong>{{ pkg.title if pkg.title else pkg.name }} dataset</strong> contains the following errors when validated against the <strong>{{ selected_opt.text }}</strong> schema:</p>
+      <div class="row">
+        <div class="col-md-4">
+          <label for="schema">Select schema to validate/publish</label>
+        </div>
+        <div class="col-md-8">
+          <div class="form-group">
+            <select id="schema" name="schema" class="form-control">
+              {% for option in options %}
+                <option value="{{ option.value }}" {{ 'selected="selected"' if data['schema'] == option.value else '' }}>{{ option.text }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
 
-            {% if pkg_errors %}
-              <br/>
-              <ul>
-                {% for key, error in pkg_errors.items() %}
-                  <li>
-                    <a target="_blank" href="{{ h.url_for('dataset.edit', id=pkg.id) }}#field-{{key}}">
-                      <strong>{{ h.qdes_get_field_label(key, schema) }}</strong></a> : {{ error|join(', ') }}
-                  </li>
-                {% endfor %}
-              </ul>
-            {% endif %}
+      <div class="row form-group">
+        <div class="col-md-10">
+          {% if pkg_errors or res_errors %}
+            {%- set schema = h.scheming_get_dataset_schema(pkg.type) -%}
+            <div class="error-explanation alert alert-error" role="alert">
+              <p>The <strong>{{ pkg.title if pkg.title else pkg.name }} dataset</strong> contains the following errors when validated against the <strong>{{ selected_opt.text }}</strong> schema:</p>
 
-            {% if res_errors %}
-              <br/>
-              <h2>Resources:</h2>
-              {% for res in res_errors %}
-                {% if loop.index > 1 %}
-                  <br/>
-                {% endif %}
-
-                <p>The <strong>{{ res.resource_name }}</strong> resource contains the following errors when validated against the <strong>{{ selected_opt.text }}</strong> schema:</p>
+              {% if pkg_errors %}
                 <br/>
                 <ul>
-                  {% for err in res.errors %}
-                    {% for key, key_error in err.items() %}
-                      <li>
-                        <a target="_blank" href="{{ h.url_for(pkg.type + '_resource.edit', id=pkg.id, resource_id=res.resource_id) }}#field-{{key}}">
-                          <strong>{{ h.qdes_get_field_label(key, schema, 'resource_fields') }}</strong></a> : {{ key_error|join(', ') }}
-                      </li>
-                    {% endfor %}
+                  {% for key, error in pkg_errors.items() %}
+                    <li>
+                      <a target="_blank" href="{{ h.url_for('dataset.edit', id=pkg.id) }}#field-{{key}}">
+                        <strong>{{ h.qdes_get_field_label(key, schema) }}</strong></a> : {{ error|join(', ') }}
+                    </li>
                   {% endfor %}
                 </ul>
-              {% endfor %}
+              {% endif %}
 
-            {% endif %}
-          </div>
-        {% elif selected_opt.text %}
-          <div class="alert alert-success" role="alert">
-            The <strong>{{ pkg.title if pkg.title else pkg.name }} dataset</strong> has no errors when validated against the <strong>{{ selected_opt.text }}</strong> schema.
-          </div>
-        {% endif %}
-      </div>
-      <div class="col-md-2">
-        <button class="btn btn-default btn-block validate" type="submit" name="action" value="validate" disabled>Validate</button>
-      </div>
-    </div>
+              {% if res_errors %}
+                <br/>
+                <h2>Resources:</h2>
+                {% for res in res_errors %}
+                  {% if loop.index > 1 %}
+                    <br/>
+                  {% endif %}
 
-    <div class="row form-group">
-      <div class="col-md-10">
-        {% if publication_message %}
-          <div class="alert {{ publication_message.cls }}" role="alert">
-            {{ publication_message.text }}
-          </div>
-        {% endif %}
+                  <p>The <strong>{{ res.resource_name }}</strong> resource contains the following errors when validated against the <strong>{{ selected_opt.text }}</strong> schema:</p>
+                  <br/>
+                  <ul>
+                    {% for err in res.errors %}
+                      {% for key, key_error in err.items() %}
+                        <li>
+                          <a target="_blank" href="{{ h.url_for(pkg.type + '_resource.edit', id=pkg.id, resource_id=res.resource_id) }}#field-{{key}}">
+                            <strong>{{ h.qdes_get_field_label(key, schema, 'resource_fields') }}</strong></a> : {{ key_error|join(', ') }}
+                        </li>
+                      {% endfor %}
+                    {% endfor %}
+                  </ul>
+                {% endfor %}
+
+              {% endif %}
+            </div>
+          {% elif selected_opt.text %}
+            <div class="alert alert-success" role="alert">
+              The <strong>{{ pkg.title if pkg.title else pkg.name }} dataset</strong> has no errors when validated against the <strong>{{ selected_opt.text }}</strong> schema.
+            </div>
+          {% endif %}
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-default btn-block validate" type="submit" name="action" value="validate" disabled>Validate</button>
+        </div>
       </div>
-      <div class="col-md-2">
-        <button
-          data-module="publish-confirm-action"
-          data-module-content="Has the metadata record gone through the relevant business review / approval process to publish?"
-          data-module-content-cancel="The distribution can not be published without the relevant business review / approval process."
-          data-module-with-data="true"
-          class="btn btn-default btn-block publish"
-          type="submit" name="action" value="publish" disabled>Publish</button>
+
+      <div class="row form-group">
+        <div class="col-md-10">
+          {% if publication_message %}
+            <div class="alert {{ publication_message.cls }}" role="alert">
+              {{ publication_message.text }}
+            </div>
+          {% endif %}
+        </div>
+        <div class="col-md-2">
+          <button
+            data-module="publish-confirm-action"
+            data-module-content="Has the metadata record gone through the relevant business review / approval process to publish?"
+            data-module-content-cancel="The distribution can not be published without the relevant business review / approval process."
+            data-module-with-data="true"
+            class="btn btn-default btn-block publish"
+            type="submit" name="action" value="publish" disabled>Publish</button>
+        </div>
       </div>
-    </div>
-  </form>
-</details>
+    </form>
+  </div>
+</article>

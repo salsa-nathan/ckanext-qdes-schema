@@ -244,4 +244,29 @@
             window.history.replaceState(null, null, window.location.href);
         }
     });
+
+    $(document).ready(function () {
+        var $unPublishEl = $('.unpublish-wrapper');
+        var $resourceEl = $unPublishEl.find('#unpublish-resource');
+        var $destinationEl = $unPublishEl.find('#schema-unpublish');
+        var $unPublishBtnEl = $unPublishEl.find('.unpublish');
+        var toggleBtnOnOff = function () {
+            if ($resourceEl.val() !== 'none' && $destinationEl.val() !== 'none') {
+                $unPublishBtnEl.attr('disabled', false);
+            } else {
+                $unPublishBtnEl.attr('disabled', true);
+            }
+        }
+
+        $resourceEl.on('change', function () {
+            toggleBtnOnOff();
+        });
+
+        $destinationEl.on('change', function () {
+            toggleBtnOnOff();
+        });
+
+        // Init.
+        toggleBtnOnOff();
+    });
 })(jQuery)

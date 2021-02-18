@@ -10,6 +10,10 @@
     {{ h.build_nav_icon('qdes_schema.related_datasets', _('Related Datasets'), id_or_name=id_or_name, icon='object-group') }}
   {% endif %}
   {{ h.build_nav_icon(dataset_type ~ '.groups', _('Groups'), id=id_or_name, icon='users') }}
-  {{ h.build_nav_icon('qdes_schema.datasets_schema_validation', _('Publish'), id=id_or_name, icon='list') }}
+
+  {% if h.check_access('package_update', {'id':pkg.id }) %}
+    {{ h.build_nav_icon('qdes_schema.datasets_schema_validation', _('Publish'), id=id_or_name, icon='list') }}
+  {% endif %}
+
   {{ h.build_nav_icon(dataset_type ~ '.activity', _('Activity Stream'), id=id_or_name, icon='clock-o') }}
 {% endblock %}

@@ -1,11 +1,15 @@
 import ckanext.qdes_schema.constants as constants
 import datetime
+import logging
 
 from ckan.model import meta
 from ckan.model import types as _types
 from sqlalchemy import types, Column, Table
 from ckan.model.domain_object import DomainObject
 from sqlalchemy import desc
+from pprint import pformat
+
+log = logging.getLogger(__name__)
 
 # Define publish_log table structure.
 publish_log_table = Table(
@@ -28,6 +32,13 @@ class PublishLog(DomainObject):
     u"""
     An PublishLog object.
     """
+
+    # Available destination.
+    destinations = [
+        constants.PUBLISH_EXTERNAL_IDENTIFIER_DATA_QLD_SCHEMA,
+        constants.PUBLISH_EXTERNAL_IDENTIFIER_QSPATIAL_SCHEMA,
+        constants.PUBLISH_EXTERNAL_IDENTIFIER_SIR_SCHEMA
+    ]
 
     def __init__(self, dataset_id=None, resource_id=None, trigger=None, destination=None, destination_identifier=None,
                  action=None, status=None, details=None):
@@ -60,22 +71,52 @@ class PublishLog(DomainObject):
         return query.first()
 
     @classmethod
-    def dataset_has_published_to_external(cls, dataset_id):
+    def has_published(cls, id, type='dataset'):
+        published_log = {}
+        for destination in cls.destinations:
+            query = meta.Session.query(cls) \
+                .filter(cls.action.in_(tuple([constants.PUBLISH_ACTION_UPDATE, constants.PUBLISH_ACTION_CREATE]))) \
+                .filter(cls.status == constants.PUBLISH_STATUS_SUCCESS) \
+                .filter(cls.destination == destination) \
+                .order_by(desc(cls.date_processed))
+
+            if type == 'dataset':
+                query = query.filter(cls.dataset_id == id)
+            elif type == 'resource':
+                query = query.filter(cls.resource_id == id)
+
+            publish_log = query.first()
+
+            if publish_log and not cls.has_unpublished(publish_log, destination):
+                # Check if this resource already unpublished.
+                published_log[destination] = publish_log
+
+        return published_log
+
+    @classmethod
+    def has_unpublished(cls, publish_log, destination):
         query = meta.Session.query(cls) \
-            .filter(cls.dataset_id == dataset_id) \
-            .filter(cls.action.in_(tuple([constants.PUBLISH_ACTION_UPDATE, constants.PUBLISH_ACTION_CREATE]))) \
+            .filter(cls.resource_id == publish_log.resource_id) \
+            .filter(cls.action == constants.PUBLISH_ACTION_DELETE) \
             .filter(cls.status == constants.PUBLISH_STATUS_SUCCESS) \
-            .order_by(desc(cls.date_processed))
+            .filter(cls.destination == destination) \
+            .filter(cls.date_processed > publish_log.date_processed)
+
         return query.first()
 
     @classmethod
-    def resource_has_published_to_external(cls, resource_id):
-        query = meta.Session.query(cls) \
-            .filter(cls.resource_id == resource_id) \
-            .filter(cls.action.in_(tuple([constants.PUBLISH_ACTION_UPDATE, constants.PUBLISH_ACTION_CREATE]))) \
-            .filter(cls.status == constants.PUBLISH_STATUS_SUCCESS) \
-            .order_by(desc(cls.date_processed))
-        return query.first()
+    def get_published_distributions(cls, pkg):
+        published_log = {}
+        for destination in cls.destinations:
+            published_log[destination] = []
+
+        for resource in pkg.get('resources'):
+            published_distributions = cls.has_published(resource.get('id'), 'resource')
+            for destination in published_distributions:
+                published_log[destination].append(published_distributions[destination])
+
+
+        return published_log
 
 
 meta.mapper(PublishLog, publish_log_table)

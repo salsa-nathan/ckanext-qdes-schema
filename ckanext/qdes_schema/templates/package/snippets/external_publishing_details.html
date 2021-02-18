@@ -1,6 +1,16 @@
-<details class="row validate-publish" open data-valid="{{ valid }}">
-  <summary>Publish activity</summary>
-  <table class="table table-striped">
+<article class="external-publishing-details" open data-valid="{{ valid }}">
+  <input id="external-publishing-details" type="checkbox" name="tabs"
+         aria-controls="external-publishing-details-content" aria-expanded="true"
+         role="checkbox" tabindex="-1" checked>
+  <button class="acc-heading">
+    <label for="external-publishing-details" class="no-colon">
+      <span class="title">Publish activity</span>
+      <span class="arrow"> <i></i></span>
+    </label>
+  </button>
+
+  <div class="collapsing-section" id="external-publishing-details-content">
+    <table class="table table-striped">
     <thead>
       <tr>
         <th>Portal</th>
@@ -19,7 +29,7 @@
             <td>{{ publish_activity.distribution }}</td>
             <td>
               {{ publish_activity.status }}
-              {% if publish_activity.status == 'Publish error' %}
+              {% if 'error' in publish_activity.status%}
                 <details>
                   <summary><small>View errors</small></summary>
                   <small>
@@ -39,4 +49,5 @@
       {% endif %}
     </tbody>
   </table>
-</details>
+  </div>
+</article>
