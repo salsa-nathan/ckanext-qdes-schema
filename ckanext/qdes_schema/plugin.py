@@ -40,6 +40,9 @@ class QDESSchemaPlugin(plugins.SingletonPlugin):
     def configure(self, config):
         core_validator.object_id_validators['publish external schema'] = core_validator.package_id_exists
         core_validator.object_id_validators['unpublish external schema'] = core_validator.package_id_exists
+        # DDCI-591
+        core_validator.object_id_validators['new API token'] = core_validator.user_id_exists
+        core_validator.object_id_validators['revoked API token']
 
     # IClick
     def get_commands(self):
