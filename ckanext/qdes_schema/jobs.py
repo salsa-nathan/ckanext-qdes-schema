@@ -396,9 +396,6 @@ def _build_and_clean_up_dataqld(des_package_dict, external_package_dict=None, re
     qld_pkg_dict['data_driven_application'] = 'NO'
     qld_pkg_dict['version'] = '1'
 
-    # @todo remove below code before deploy to production.
-    qld_pkg_dict['private'] = True
-
     return qld_pkg_dict
 
 
